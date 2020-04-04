@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 
@@ -24,11 +25,17 @@ double generateGaussian() {
 
 // Parameters: p processors, m memory modules, and d for distribution
 // Return: arithmetic average W¯ (Sc(p, m, d)) of all processors time-cumulative averages
+<<<<<<< HEAD
 int S(int p, int m, char d){
     int request[p];      // processor's request (maybe delete this)
     
 
     int access[p];       // keeps track of number of granted accesses for each processor
+=======
+float S(int p, int m, char d){
+    int request[p];      // processor's request
+    int access[p];       // processor access counter
+>>>>>>> 8545631357896b30b86f840fcc45ad881303fead
     int memory[m];       // 0 for available, 1 for taken
     float p_average[p];  // time-cumulative average of the access-time for each processor
     float w=0;           // time-cumulative average of the access-time for all processors
@@ -54,6 +61,7 @@ int S(int p, int m, char d){
                 int x = round(generateGaussian()*(m/6) + u_p[j]);  // generate random number in normal distribution
                 int request = x % m;
                 
+<<<<<<< HEAD
                 // if requested memory is free
                 if(request<m && !memory[request]) {   
                     memory[request] = 1;          // mark memory as taken
@@ -65,6 +73,11 @@ int S(int p, int m, char d){
                 }
 
 /*  
+=======
+                //generateRequest();
+                int r = rand(); 
+/*
+>>>>>>> 8545631357896b30b86f840fcc45ad881303fead
                 if granted access
                     access[j] += 1;
                     w[j] =  c/access[j]
@@ -117,12 +130,12 @@ int S(int p, int m, char d){
             new_w/=p;   
 
             //The system average access time between the current W(new_w) and previous average W (w) is less than a certain tolerance ε(2%)
-            if(new_w!=0 && abs(1-w/new_w)<0.02){    
+            if(new_w!=0 && fabs(1-w/new_w)<0.02){    
                 w=new_w;
                 break;
             }
 
-            
+
             w=new_w;
         }
     /*
@@ -149,7 +162,7 @@ int main(int argc, char** argv) {
     //The simulation part
     for(int i=0; i<2048; ++i){
         printf("Processors:%d Memory modules:%d Distribution:%c\t", p, i+1, d);
-        printf("W:%d\n", S(p,i,d));
+        printf("W:%f\n", S(p,i,d));
     }
 
     S()
