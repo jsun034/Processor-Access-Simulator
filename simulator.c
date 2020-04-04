@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+#include <float.h>
 
 
 // reset access counter and memory
@@ -26,19 +26,26 @@ double generateGaussian() {
 // Parameters: p processors, m memory modules, and d for distribution
 // Return: arithmetic average W¯ (Sc(p, m, d)) of all processors time-cumulative averages
 float S(int p, int m, char d){
-    int request[p];      // processor's request 
-    
 
+    int request[p];      // processor's request 
+    //reset request for all processors
+    for(int i=0; i<p; i++) {
+        request[i] = -1;
+    }
     int access[p];       // keeps track of number of granted accesses for each processor
     int memory[m];       // 0 for available, 1 for taken
     float p_average[p];  // time-cumulative average of the access-time for each processor
+    //reset the access-time for all processors
+    for(int i=0; i<p; i++) {
+        p_average[i] = 0;
+    }
     float w=0;           // time-cumulative average of the access-time for all processors
 
     reset(access, p);   // reset the access counter
     reset(memory, p);   // reset all memory to available
 
     if(d == 'n'){  // normal distribution
-
+/*
         // each processor selects random memory module that will serve as mean
         int u_p[p];
         for(int i=0; i<p; i++) {
@@ -85,7 +92,7 @@ float S(int p, int m, char d){
                 break;
             }
             w = new_w;
-        }
+        }*/
 
 
     } else{   //uniform distribution
@@ -93,10 +100,9 @@ float S(int p, int m, char d){
         for(int c=1; c<=1000000; ++c){   //limited to a max of 10^6 cycles
             reset(memory,m);    //reset the memory
             float new_w=0;    //the new average for the new cycle
-            for(int i=start; start<p; ++i){ //start from the first starving processor
+            for(int i=start; i<p; ++i){ //start from the first starving processor
                 if(request[i]==-1){ //previous request was successful
                     int r=rand()%m; //the requested memory
-                    printf("%d",r);
                     if(memory[r]==0){    //request a free memory
                         ++access[i];    //add access count for processor i
                         memory[i]=1;    //memory change state to taken
@@ -104,7 +110,9 @@ float S(int p, int m, char d){
                     }
                     else{
                         request[i]=r;
-                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        if(access[i]!=0){   //have been granted access bofore in case of infinite access-time
+                            p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        }
                         start=i;    //change the starving processor to i
                     }
                 }
@@ -116,7 +124,9 @@ float S(int p, int m, char d){
                         p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
                     }
                     else{
-                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        if(access[i]!=0){   //have been granted access bofore in case of infinite access-time
+                            p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        }
                         start=i;    //change the starving processor to i
                     }
                 }
@@ -131,7 +141,9 @@ float S(int p, int m, char d){
                     }
                     else{
                         request[i]=r;
-                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        if(access[i]!=0){   //have been granted access bofore in case of infinite access-time
+                            p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        }
                         start=i;    //change the starving processor to i
                     }
                 }
@@ -143,7 +155,9 @@ float S(int p, int m, char d){
                         p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
                     }
                     else{
-                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        if(access[i]!=0){   //have been granted access bofore in case of infinite access-time
+                            p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        }
                         start=i;    //change the starving processor to i
                     }
                 }
@@ -151,17 +165,21 @@ float S(int p, int m, char d){
 
             //arithmetic average W of all processors’ time-cumulative averages.
             for(int i=0; i<p; ++i){
+                if(p_average[i]==0){   //check if there is a processor with infinite access-time (a.k.a. never get to access any memory before)
+                    new_w=FLT_MAX;
+                    break;
+                }
                 new_w+=p_average[i];
             }
-            new_w/=p;
-
-            //The system average access time between the current W(new_w) and previous average W (w) is less than a certain tolerance ε(2%)
-            if(new_w!=0 && fabs(1-w/new_w)<0.02){
+            if(new_w!=FLT_MAX){
+                new_w/=p;
+            }
+            //The system average access time between the current W(new_w) and previous average W (w) is less than a certain tolerance ε(2%) and all processors have at least
+            // get an access once
+            if(new_w!=0 && new_w!=FLT_MAX && fabs(1-w/new_w)<0.02){
                 w=new_w;
                 break;
             }
-
-
             w=new_w;
         }
     /*
