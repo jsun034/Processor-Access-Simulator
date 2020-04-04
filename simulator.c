@@ -10,31 +10,69 @@ void reset(int* access, int p) {
     }
 }
 
+// generates gaussian number with mean 0 and SD 1
+double generateGaussian() {
+	double g = 0;
+	for(int i=0; i<25; i++) {
+        int max = RAND_MAX;
+		x += (double)rand()/max;
+    }
+	g = g-25.0/2.0;
+	g = g/sqrt(25.0/12.0);
+	return g;
+}
+
 // Parameters: p processors, m memory modules, and d for distribution
 // Return: arithmetic average W¯ (Sc(p, m, d)) of all processors time-cumulative averages
 int S(int p, int m, char d){
-    int request[p];      // processor's request
-    int access[p];       // processor access counter
+    int request[p];      // processor's request (maybe delete this)
+    
+
+    int access[p];       // keeps track of number of granted accesses for each processor
     int memory[m];       // 0 for available, 1 for taken
-    float p_average[p]; //time-cumulative average of the access-time for each processor
-    float w=0;  //time-cumulative average of the access-time for all processors
+    float p_average[p];  // time-cumulative average of the access-time for each processor
+    float w=0;           // time-cumulative average of the access-time for all processors
 
-    reset(access, p);   //reset the access counter
+    reset(access, p);   // reset the access counter
+    reset(memory, p);   // reset all memory to available
 
-    if(d=='u'){   //uniform distribution
-        
+    if(d == 'n'){  // normal distribution
+
+        // each processor selects random memory module that will serve as mean
+        int u_p[p];
+        for(int i=0; i<p; i++) {
+            u_p[i] = rand()%p;
+        }
+
+        int start = 0;
         for(int c=0; c<1000000; c++) {  // limited to a max of 10^6 cycles
-            for(int j=0; j<p; j++) { // first processor in array gets priority
-                int denied[p]; // keep track of which processors were denied access to their memory module
+
+            reset(memory, p); // free memory before each cycle
+
+            for(int j=start; j<p; j++) { // first processor in array gets priority
+
+                int x = round(generateGaussian()*(m/6) + u_p[j]);  // generate random number in normal distribution
+                int request = x % m;
                 
-                generateRequest()
-                int r = rand(); 
-/*
+                // if requested memory is free
+                if(request<m && !memory[request]) {   
+                    memory[request] = 1;          // mark memory as taken
+                    access[j]++;                  // increment num of accesses for processor j 
+                    p_average[j] = c/access[j];   // update time-cumulative average for processor j
+                }
+                else {
+
+                }
+
+/*  
                 if granted access
                     access[j] += 1;
                     w[j] =  c/access[j]
                 sum += w[j]
-*/             
+*/              if(abs(1-w/new_w)<0.02){   
+                    w=new_w;
+                    break;
+                }
             }
 
 /*
@@ -113,6 +151,8 @@ int main(int argc, char** argv) {
         printf("Processors:%d Memory modules:%d Distribution:%c\t", p, i+1, d);
         printf("W:%d\n", S(p,i,d));
     }
+
+    S()
     
 
     
