@@ -45,7 +45,6 @@ float S(int p, int m, char d){
     reset(memory, p);   // reset all memory to available
 
     if(d == 'n'){  // normal distribution
-/*
         // each processor selects random memory module that will serve as mean
         int u_p[p];
         for(int i=0; i<p; i++) {
@@ -92,7 +91,7 @@ float S(int p, int m, char d){
                 break;
             }
             w = new_w;
-        }*/
+        }
 
 
     } else{   //uniform distribution
