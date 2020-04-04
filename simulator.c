@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 
@@ -12,7 +13,7 @@ void reset(int* access, int p) {
 
 // Parameters: p processors, m memory modules, and d for distribution
 // Return: arithmetic average W¯ (Sc(p, m, d)) of all processors time-cumulative averages
-int S(int p, int m, char d){
+float S(int p, int m, char d){
     int request[p];      // processor's request
     int access[p];       // processor access counter
     int memory[m];       // 0 for available, 1 for taken
@@ -27,7 +28,7 @@ int S(int p, int m, char d){
             for(int j=0; j<p; j++) { // first processor in array gets priority
                 int denied[p]; // keep track of which processors were denied access to their memory module
                 
-                generateRequest()
+                //generateRequest();
                 int r = rand(); 
 /*
                 if granted access
@@ -79,12 +80,12 @@ int S(int p, int m, char d){
             new_w/=p;   
 
             //The system average access time between the current W(new_w) and previous average W (w) is less than a certain tolerance ε(2%)
-            if(new_w!=0 && abs(1-w/new_w)<0.02){    
+            if(new_w!=0 && fabs(1-w/new_w)<0.02){    
                 w=new_w;
                 break;
             }
 
-            
+
             w=new_w;
         }
     /*
@@ -111,7 +112,7 @@ int main(int argc, char** argv) {
     //The simulation part
     for(int i=0; i<2048; ++i){
         printf("Processors:%d Memory modules:%d Distribution:%c\t", p, i+1, d);
-        printf("W:%d\n", S(p,i,d));
+        printf("W:%f\n", S(p,i,d));
     }
     
 
