@@ -86,7 +86,7 @@ float S(int p, int m, char d){
             }
 
             float new_w = sum/p; 
-            if(fabs(1-w/new_w)<0.02){   
+            if(new_w!=0 && fabs(1-w/new_w)<0.02){   
                 w = new_w;
                 break;
             }
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
     //The simulation part
     for(int i=0; i<2048; ++i){
         printf("Processors:%d Memory modules:%d Distribution:%c\t", p, i+1, d);
-        printf("W:%f\n", S(p,i+1,d));
+        printf("W:%.4f\n", S(p,i+1,d));
     }
     
     return 0;   
