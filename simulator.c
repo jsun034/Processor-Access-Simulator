@@ -51,18 +51,26 @@ float S(int p, int m, char d){
             reset(memory, p); // free memory before each cycle
 
             for(int j=start; j<p+start; j++) { // first processor in array gets priority
+                int p = j%p;    
+                
 
-                int x = round(generateGaussian()*(m/6) + u_p[j]);  // generate random number in normal distribution
+                
+                x = round(generateGaussian()*(m/6) + u_p[j]);  // generate random number in normal distribution
+
                 int request = x % m;
                 
+                int sum = 0; 
                 // if requested memory is free
                 if(request<m && !memory[request]) {   
                     memory[request] = 1;          // mark memory as taken
-                    access[j]++;                  // increment num of accesses for processor j 
-                    p_average[j] = c/access[j];   // update time-cumulative average for processor j
+                    access[p]++;                  // increment num of accesses for processor p 
+                    p_average[p] = c/access[p];   // update time-cumulative average for processor p
+                    request[p] = 0;               // make sure we do not store previous request
                 }
+                // memory is not free
                 else {
-
+                    p_average[p] = c/access[p];   // update time-cumulative average for processor p
+                    request[p] = request;         // remember previous request
                 }
 
 /*  
@@ -169,20 +177,6 @@ float S(int p, int m, char d){
     */
 
     }
-
-
-            w=new_w;
-        }
-    /*
-    At cycle c:
-        if p get access=> access[p]+=1
-        Wp=c/access[p]
-    for all p:
-        W+=Wp
-    W=W/p
-    */
-
-    }
     return w;
 }
 
@@ -198,6 +192,8 @@ int main(int argc, char** argv) {
         printf("Processors:%d Memory modules:%d Distribution:%c\t", p, i+1, d);
         printf("W:%f\n", S(p,i,d));
     }
+
+    S()
     
     return 0;   
 }
