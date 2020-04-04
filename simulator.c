@@ -159,20 +159,7 @@ float S(int p, int m, char d){
 
             w=new_w;
         }
-    /*
-    At cycle c:
-        if p get access=> access[p]+=1
-        Wp=c/access[p]
-    for all p:
-        W+=Wp
-    W=W/p
-    */
 
-    }
-
-
-            w=new_w;
-        }
     /*
     At cycle c:
         if p get access=> access[p]+=1
