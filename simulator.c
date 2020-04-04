@@ -3,7 +3,7 @@
 
 
 
-// reset access counter
+// reset access counter and memory
 void reset(int* access, int p) {
     for(int i=0; i<p; i++) {
         access[i] = 0;
@@ -19,7 +19,7 @@ int S(int p, int m, char d){
     float p_average[p]; //time-cumulative average of the access-time for each processor
     float w=0;  //time-cumulative average of the access-time for all processors
 
-    reset(access, p);
+    reset(access, p);   //reset the access counter
 
     if(d=='u'){   //uniform distribution
         
@@ -45,17 +45,47 @@ int S(int p, int m, char d){
 
     }
     else{   //normal distribution
-        float new_w;    //the new average for the new cycle
+        int start=0;    //the first starving processor
         for(int c=0; c<1000000; ++c){   //limited to a max of 10^6 cycles
+            reset(memory,m);    //reset the memory
+            float new_w=0;    //the new average for the new cycle
+            for(int i=start; start<p; ++i){ //start from the first starving processor
+                if(memory[rand()%m]==0){    //request a free memory
+                    ++access[i];    //add access count for processor i
+                    memory[i]=1;    //memory change state to taken
+                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c 
+                }
+                else{
+                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                    start=i;    //change the starving processor to i
+                }
+            }
+            for(int i=0; i<start; ++i){ //loop from the first processor so that every processor have been dealt with
+                if(memory[rand()%m]==0){    //request a free memory
+                    ++access[i];    //add access count for processor i
+                    memory[i]=1;    //memory change state to taken
+                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c 
+                }
+                else{
+                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                    start=i;    //change the starving processor to i
+                }
+            }
 
+            //arithmetic average W of all processors’ time-cumulative averages.
+            for(int i=0; i<p; ++i){
+                new_w+=p_average[i];
+            }
+            new_w/=p;   
 
-
-
-            if(abs(1-w/new_w)<0.02){    //The system average access time between the current W(new_w) and previous average W (w) is less than a certain tolerance ε(2%)
+            //The system average access time between the current W(new_w) and previous average W (w) is less than a certain tolerance ε(2%)
+            if(new_w!=0 && abs(1-w/new_w)<0.02){    
                 w=new_w;
                 break;
             }
+
             
+            w=new_w;
         }
     /*
     At cycle c:
