@@ -25,17 +25,11 @@ double generateGaussian() {
 
 // Parameters: p processors, m memory modules, and d for distribution
 // Return: arithmetic average W¯ (Sc(p, m, d)) of all processors time-cumulative averages
-<<<<<<< HEAD
 int S(int p, int m, char d){
     int request[p];      // processor's request (maybe delete this)
     
 
     int access[p];       // keeps track of number of granted accesses for each processor
-=======
-float S(int p, int m, char d){
-    int request[p];      // processor's request
-    int access[p];       // processor access counter
->>>>>>> 8545631357896b30b86f840fcc45ad881303fead
     int memory[m];       // 0 for available, 1 for taken
     float p_average[p];  // time-cumulative average of the access-time for each processor
     float w=0;           // time-cumulative average of the access-time for all processors
@@ -56,12 +50,11 @@ float S(int p, int m, char d){
 
             reset(memory, p); // free memory before each cycle
 
-            for(int j=start; j<p; j++) { // first processor in array gets priority
+            for(int j=start; j<p+start; j++) { // first processor in array gets priority
 
                 int x = round(generateGaussian()*(m/6) + u_p[j]);  // generate random number in normal distribution
                 int request = x % m;
                 
-<<<<<<< HEAD
                 // if requested memory is free
                 if(request<m && !memory[request]) {   
                     memory[request] = 1;          // mark memory as taken
@@ -73,11 +66,6 @@ float S(int p, int m, char d){
                 }
 
 /*  
-=======
-                //generateRequest();
-                int r = rand(); 
-/*
->>>>>>> 8545631357896b30b86f840fcc45ad881303fead
                 if granted access
                     access[j] += 1;
                     w[j] =  c/access[j]
