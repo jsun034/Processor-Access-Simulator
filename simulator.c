@@ -80,7 +80,7 @@ float S(int p, int m, char d){
             }
 
             float new_w = sum/p; 
-            if(fabs(1-w/new_w)<0.02){   
+            if(new_w!=0 && fabs(1-w/new_w)<0.02){   
                 w = new_w;
                 break;
             }
