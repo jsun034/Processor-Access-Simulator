@@ -26,7 +26,7 @@ double generateGaussian() {
 // Parameters: p processors, m memory modules, and d for distribution
 // Return: arithmetic average W¯ (Sc(p, m, d)) of all processors time-cumulative averages
 float S(int p, int m, char d){
-    int request[p];      // processor's request (maybe delete this)
+    int request[p];      // processor's request 
     
 
     int access[p];       // keeps track of number of granted accesses for each processor
@@ -44,54 +44,51 @@ float S(int p, int m, char d){
         for(int i=0; i<p; i++) {
             u_p[i] = rand()%p;
         }
-
+        
         int start = 0;
         for(int c=0; c<1000000; c++) {  // limited to a max of 10^6 cycles
 
             reset(memory, p); // free memory before each cycle
 
+            int sum = 0;      // sum of all time-cumulative averages
+
             for(int j=start; j<p+start; j++) { // first processor in array gets priority
                 int p = j%p;    
                 
-
+                int req;
+                if(request[p]) {    // if previous request for memory failed
+                    req = request[p];
+                } else {            // generate new request
+                    int x = round(generateGaussian()*(m/6) + u_p[j]);  // generate random number in normal distribution
+                    req = x % m;
+                }
+            
                 
-                x = round(generateGaussian()*(m/6) + u_p[j]);  // generate random number in normal distribution
-
-                int request = x % m;
-                
-                int sum = 0; 
                 // if requested memory is free
-                if(request<m && !memory[request]) {   
-                    memory[request] = 1;          // mark memory as taken
+                if(req<m && !memory[req]) {   
+                    memory[req] = 1;          // mark memory as taken
                     access[p]++;                  // increment num of accesses for processor p 
                     p_average[p] = c/access[p];   // update time-cumulative average for processor p
                     request[p] = 0;               // make sure we do not store previous request
                 }
                 // memory is not free
                 else {
-                    p_average[p] = c/access[p];   // update time-cumulative average for processor p
-                    request[p] = request;         // remember previous request
+                    p_average[p] = (float)c/access[p];   // update time-cumulative average for processor p
+                    request[p] = req;                // remember previous request
                 }
-
-/*  
-                if granted access
-                    access[j] += 1;
-                    w[j] =  c/access[j]
-                sum += w[j]
-*/              /*if(abs(1-w/new_w)<0.02){   
-                    w=new_w;
-                    break;
-                }*/
+                sum += p_average[p];
             }
 
-/*
-         // compute w
-            w = sum/p
-*/      
+            float new_w = sum/p; 
+            if(abs(1-w/new_w)<0.02){   
+                w = new_w;
+                break;
+            }
+            w = new_w;
         }
 
-    }
-    else{   //normal distribution
+
+    } else{   //normal distribution
         int start=0;    //the first starving processor
         for(int c=1; c<=1000000; ++c){   //limited to a max of 10^6 cycles
             reset(memory,m);    //reset the memory
