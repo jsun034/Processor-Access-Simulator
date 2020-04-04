@@ -16,7 +16,7 @@ double generateGaussian() {
 	double g = 0;
 	for(int i=0; i<25; i++) {
         int max = RAND_MAX;
-		x += (double)rand()/max;
+		//x += (double)rand()/max;
     }
 	g = g-25.0/2.0;
 	g = g/sqrt(25.0/12.0);
@@ -25,7 +25,7 @@ double generateGaussian() {
 
 // Parameters: p processors, m memory modules, and d for distribution
 // Return: arithmetic average W¯ (Sc(p, m, d)) of all processors time-cumulative averages
-int S(int p, int m, char d){
+float S(int p, int m, char d){
     int request[p];      // processor's request (maybe delete this)
     
 
@@ -70,10 +70,10 @@ int S(int p, int m, char d){
                     access[j] += 1;
                     w[j] =  c/access[j]
                 sum += w[j]
-*/              if(abs(1-w/new_w)<0.02){   
+*/              /*if(abs(1-w/new_w)<0.02){   
                     w=new_w;
                     break;
-                }
+                }*/
             }
 
 /*
@@ -89,25 +89,58 @@ int S(int p, int m, char d){
             reset(memory,m);    //reset the memory
             float new_w=0;    //the new average for the new cycle
             for(int i=start; start<p; ++i){ //start from the first starving processor
-                if(memory[rand()%m]==0){    //request a free memory
-                    ++access[i];    //add access count for processor i
-                    memory[i]=1;    //memory change state to taken
-                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c 
+                if(request[i]==-1){ //previous request was successful
+                    int r=rand()%m; //the requested memory
+                    printf("%d",r);
+                    if(memory[r]==0){    //request a free memory
+                        ++access[i];    //add access count for processor i
+                        memory[i]=1;    //memory change state to taken
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                    }
+                    else{
+                        request[i]=r;
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        start=i;    //change the starving processor to i
+                    }
                 }
                 else{
-                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
-                    start=i;    //change the starving processor to i
+                    if(memory[request[i]]==0){    //request a free memory
+                        request[i]=-1;  //reset the request because it was successfully accessed this time
+                        ++access[i];    //add access count for processor i
+                        memory[i]=1;    //memory change state to taken
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                    }
+                    else{
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        start=i;    //change the starving processor to i
+                    }
                 }
             }
             for(int i=0; i<start; ++i){ //loop from the first processor so that every processor have been dealt with
-                if(memory[rand()%m]==0){    //request a free memory
-                    ++access[i];    //add access count for processor i
-                    memory[i]=1;    //memory change state to taken
-                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c 
+                if(request[i]==-1){ //previous request was successful
+                    int r=rand()%m; //the requested memory
+                    if(memory[r]==0){    //request a free memory
+                        ++access[i];    //add access count for processor i
+                        memory[i]=1;    //memory change state to taken
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                    }
+                    else{
+                        request[i]=r;
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        start=i;    //change the starving processor to i
+                    }
                 }
                 else{
-                    p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
-                    start=i;    //change the starving processor to i
+                    if(memory[request[i]]==0){    //request a free memory
+                        request[i]=-1;  //reset the request because it was successfully accessed this time
+                        ++access[i];    //add access count for processor i
+                        memory[i]=1;    //memory change state to taken
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                    }
+                    else{
+                        p_average[i]=(float)c/(float)access[i]; //compute the time-cumulative average of processor i's memory access at cycle c
+                        start=i;    //change the starving processor to i
+                    }
                 }
             }
 
@@ -115,13 +148,27 @@ int S(int p, int m, char d){
             for(int i=0; i<p; ++i){
                 new_w+=p_average[i];
             }
-            new_w/=p;   
+            new_w/=p;
 
             //The system average access time between the current W(new_w) and previous average W (w) is less than a certain tolerance ε(2%)
-            if(new_w!=0 && fabs(1-w/new_w)<0.02){    
+            if(new_w!=0 && fabs(1-w/new_w)<0.02){
                 w=new_w;
                 break;
             }
+
+
+            w=new_w;
+        }
+    /*
+    At cycle c:
+        if p get access=> access[p]+=1
+        Wp=c/access[p]
+    for all p:
+        W+=Wp
+    W=W/p
+    */
+
+    }
 
 
             w=new_w;
@@ -143,7 +190,6 @@ int S(int p, int m, char d){
 
 int main(int argc, char** argv) {
 
-
     int p = atoi(argv[1]);
     char d = *argv[2];
     
@@ -152,10 +198,6 @@ int main(int argc, char** argv) {
         printf("Processors:%d Memory modules:%d Distribution:%c\t", p, i+1, d);
         printf("W:%f\n", S(p,i,d));
     }
-
-    S()
-    
-
     
     return 0;   
 }
