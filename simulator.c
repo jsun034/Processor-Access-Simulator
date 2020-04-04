@@ -80,7 +80,7 @@ float S(int p, int m, char d){
             }
 
             float new_w = sum/p; 
-            if(abs(1-w/new_w)<0.02){   
+            if(fabs(1-w/new_w)<0.02){   
                 w = new_w;
                 break;
             }
@@ -88,7 +88,7 @@ float S(int p, int m, char d){
         }
 
 
-    } else{   //normal distribution
+    } else{   //uniform distribution
         int start=0;    //the first starving processor
         for(int c=1; c<=1000000; ++c){   //limited to a max of 10^6 cycles
             reset(memory,m);    //reset the memory
