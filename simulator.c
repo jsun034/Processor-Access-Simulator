@@ -93,7 +93,7 @@ float S(int p, int m, char d){
     }
     else{   //normal distribution
         int start=0;    //the first starving processor
-        for(int c=0; c<1000000; ++c){   //limited to a max of 10^6 cycles
+        for(int c=1; c<=1000000; ++c){   //limited to a max of 10^6 cycles
             reset(memory,m);    //reset the memory
             float new_w=0;    //the new average for the new cycle
             for(int i=start; start<p; ++i){ //start from the first starving processor
@@ -190,10 +190,8 @@ int main(int argc, char** argv) {
     //The simulation part
     for(int i=0; i<2048; ++i){
         printf("Processors:%d Memory modules:%d Distribution:%c\t", p, i+1, d);
-        printf("W:%f\n", S(p,i,d));
+        printf("W:%f\n", S(p,i+1,d));
     }
-
-    S()
     
     return 0;   
 }
